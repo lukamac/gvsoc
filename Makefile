@@ -33,7 +33,9 @@ SYSTEMC_VERSION := 2.3.3
 SYSTEMC_GIT_URL := https://github.com/accellera-official/systemc.git
 SYSTEMC_INSTALL_DIR := $(PWD)/third_party/systemc_install
 
-apply_patch:
+apply_patch: core/models/memory/dramsys.cpp
+
+core/models/memory/dramsys.cpp:
 	git submodule update --init --recursive
 	cd core && git apply --check ../add_dramsyslib_patches/gvsoc_core.patch
 	if [ $$? -eq 0 ]; then \
