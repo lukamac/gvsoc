@@ -2,3 +2,12 @@ docs/developer/_build/
 build/
 /install/
 __pycache__/
+DRAMSys*
+debug_binary*
+gvsoc_config.json
+hyperflash.bin
+power_report.csv
+spiflash.bin
+third_party/
+trace_file.txt
+tx_uart.log
