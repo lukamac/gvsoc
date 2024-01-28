@@ -30,8 +30,8 @@ run:
 	export PULP_RISCV_GCC_TOOLCHAIN=$(PULP_RISCV_GCC_TOOLCHAIN)
 	export GVSOC_PATH=$(GVSOC_PATH)
 
-	source $(PULP_SDK_PATH)/configs/pulp-open.sh; $(MAKE) -C $(GVSOC_PATH) all TARGETS=pulp-open; $(MAKE) -C $(TEST_PATH) clean; $(MAKE) -C $(TEST_PATH)
+	source $(PULP_SDK_PATH)/configs/pulp-open.sh; $(MAKE) -C $(GVSOC_PATH) all TARGETS=pulp-open-ddr; $(MAKE) -C $(TEST_PATH) clean; $(MAKE) -C $(TEST_PATH)
 
 	mkdir -p reports
 
-	cd reports; $(GVSOC_PATH)/install/bin/gvsoc --target=pulp-open --binary $(TEST_PATH)/BUILD/PULP/GCC_RISCV/redmule_test/redmule_test image flash run
+	cd reports; $(GVSOC_PATH)/install/bin/gvsoc --target=pulp-open-ddr --binary $(TEST_PATH)/BUILD/PULP/GCC_RISCV/redmule_test/redmule_test image flash run
