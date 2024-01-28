@@ -33,19 +33,19 @@ SYSTEMC_VERSION := 2.3.3
 SYSTEMC_GIT_URL := https://github.com/accellera-official/systemc.git
 SYSTEMC_INSTALL_DIR := $(PWD)/third_party/systemc_install
 
-apply_patch: core/models/memory/dramsys.cpp
+apply_patch: pulp/pulp/redmule/src/redmule.cpp
 
-core/models/memory/dramsys.cpp:
+pulp/pulp/redmule/src/redmule.cpp:
 	git submodule update --init --recursive
 	cd core && git apply --check ../add_dramsyslib_patches/gvsoc_core.patch
 	if [ $$? -eq 0 ]; then \
 		cd core && git apply ../add_dramsyslib_patches/gvsoc_core.patch;\
 	fi
-	cd pulp && git apply --check ../add_dramsyslib_patches/gvsoc_pulp_modify_for_DMA_DRAM_test.patch
+	cd pulp && git apply --check ../add_dramsyslib_patches/gvsoc_pulp_add_dramsys_redmule.patch
 	if [ $$? -eq 0 ]; then \
-		cd pulp && git apply ../add_dramsyslib_patches/gvsoc_pulp_modify_for_DMA_DRAM_test.patch;\
+		cd pulp && git apply ../add_dramsyslib_patches/gvsoc_pulp_add_dramsys_redmule.patch;\
 	fi
-
+	cp -rfv add_dramsyslib_patches/redmule pulp/pulp/
 
 third_party:
 	mkdir -p third_party
@@ -72,4 +72,14 @@ build-configs: core/models/memory/dramsys_configs
 core/models/memory/dramsys_configs:
 	cp -rf add_dramsyslib_patches/dramsys_configs core/models/memory/
 
-dramsys_preparation: apply_patch build-systemc build-dramsys build-configs
+build-pulp_sdk: third_party/pulp-sdk
+
+third_party/pulp-sdk:
+	cd third_party && git clone git@github.com:pulp-platform/pulp-sdk.git
+	cd third_party/pulp-sdk && \
+	wget https://github.com/pulp-platform/pulp-riscv-gnu-toolchain/releases/download/v1.0.16/v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2 &&\
+	tar -xvjf v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2
+
+dramsys_redmule_preparation: apply_patch build-systemc build-dramsys build-configs build-pulp_sdk
+
+https://github.com/pulp-platform/pulp-riscv-gnu-toolchain/releases/download/v1.0.16/v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2

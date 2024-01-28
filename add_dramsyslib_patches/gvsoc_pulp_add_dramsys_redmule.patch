@@ -1,0 +1,117 @@
+diff --git a/pulp/CMakeLists.txt b/pulp/CMakeLists.txt
+index e9710c1..799fbf9 100644
+--- a/pulp/CMakeLists.txt
++++ b/pulp/CMakeLists.txt
+@@ -16,4 +16,5 @@ add_subdirectory(soc_eu)
+ add_subdirectory(stdout)
+ add_subdirectory(neureka)
+ add_subdirectory(wmem)
+-add_subdirectory(spatz)
+\ No newline at end of file
++add_subdirectory(spatz)
++add_subdirectory(redmule)
+\ No newline at end of file
+diff --git a/pulp/chips/pulp_open/cluster.json b/pulp/chips/pulp_open/cluster.json
+index 259971a..ae62a78 100644
+--- a/pulp/chips/pulp_open/cluster.json
++++ b/pulp/chips/pulp_open/cluster.json
+@@ -144,6 +144,14 @@
+             }
+         },
+ 
++        "redmule": {
++            "mapping": {
++                "base": "0x10201000",
++            "size": "0x00000400",
++            "remove_offset": "0x10201000"
++            }
++        },
++
+         "icache_ctrl": {
+             "mapping": {
+                 "base": "0x10201400",
+diff --git a/pulp/chips/pulp_open/cluster.py b/pulp/chips/pulp_open/cluster.py
+index 7078c50..89638b7 100644
+--- a/pulp/chips/pulp_open/cluster.py
++++ b/pulp/chips/pulp_open/cluster.py
+@@ -25,6 +25,7 @@ from pulp.timer.timer_v2 import Timer
+ from pulp.cluster.cluster_control_v2 import Cluster_control
+ from pulp.ne16.ne16 import Ne16
+ from pulp.icache_ctrl.icache_ctrl_v2 import Icache_ctrl
++from pulp.redmule.redmule import RedMule
+ 
+ 
+ def get_cluster_name(cid: int):
+@@ -83,6 +84,9 @@ class Cluster(st.Component):
+         first_external_pcer = 12
+         has_ne16 = False
+ 
++        redmule_irq         = self.get_property('pe/irq').index('acc_0')
++        has_redmule         = True
++
+ 
+         #
+         # Components
+@@ -124,6 +128,10 @@ class Cluster(st.Component):
+             # NE16
+             ne16 = Ne16(self, 'ne16')
+ 
++        if has_redmule:
++            # NE16
++            redmule = RedMule(self, 'redmule')
++
+         # Icache controller
+         icache_ctrl = Icache_ctrl(self, 'icache_ctrl')
+     
+@@ -205,6 +213,10 @@ class Cluster(st.Component):
+             periph_ico.add_mapping('ne16', **self._reloc_mapping(self.get_property('peripherals/ne16/mapping')))
+             self.bind(periph_ico, 'ne16', ne16, 'input')
+ 
++        if has_redmule:
++            periph_ico.add_mapping('redmule', **self._reloc_mapping(self.get_property('peripherals/redmule/mapping')))
++            self.bind(periph_ico, 'redmule', redmule, 'input')
++
+         # MCHAN
+         self.bind(mchan, 'ext_irq_itf', self, 'dma_irq')
+         self.bind(mchan, 'ext_itf', cluster_ico, 'input')
+@@ -237,6 +249,13 @@ class Cluster(st.Component):
+ 
+             self.bind(ne16, 'out', l1, 'ne16_in')
+ 
++        if has_redmule:
++            # REDMULE
++            for i in range(0, nb_pe):
++                self.bind(redmule, 'irq', event_unit, 'in_event_%d_pe_%d' % (redmule_irq, i))
++
++            self.bind(redmule, 'out', l1, 'redmule_in')
++
+         # Icache controller
+         self.bind(icache_ctrl, 'enable', icache, 'enable')
+         self.bind(icache_ctrl, 'flush', icache, 'flush')
+diff --git a/pulp/chips/pulp_open/l1_subsystem.py b/pulp/chips/pulp_open/l1_subsystem.py
+index 4a38b6e..05e5934 100644
+--- a/pulp/chips/pulp_open/l1_subsystem.py
++++ b/pulp/chips/pulp_open/l1_subsystem.py
+@@ -123,6 +123,7 @@ class L1_subsystem(st.Component):
+             self.bind(interleaver, 'out_%d' % i, l1_banks[i], 'input')
+ 
+         self.bind(self, 'ne16_in', interleaver, 'in_%d' % (nb_pe + 4))
++        self.bind(self, 'redmule_in', interleaver, 'in_%d' % (nb_pe + 4))
+ 
+         for i in range(0, 4):
+             self.bind(self, 'dma_in_%d' % i, interleaver, 'in_%d' % (nb_pe + i))
+diff --git a/pulp/chips/pulp_open/soc.py b/pulp/chips/pulp_open/soc.py
+index 26403fb..aee187e 100644
+--- a/pulp/chips/pulp_open/soc.py
++++ b/pulp/chips/pulp_open/soc.py
+@@ -261,8 +261,8 @@ class Soc(st.Component):
+         self.bind(soc_ico, 'axi_proxy', axi_ico, 'input')
+         self.bind(soc_ico, 'ddr', axi_ico, 'input')
+ 
+-        axi_ico.add_mapping('ddr', base=0x80000000, size=0x80000000)
+-        self.bind(soc_ico, 'ddr', self, 'ddr')
++        axi_ico.add_mapping('ddr', base=0x80000000, size=0x00100000)
++        self.bind(axi_ico, 'ddr', self, 'ddr')
+ 
+         self.bind(axi_ico, 'soc', soc_ico, 'axi_slave')
+         self.bind(self, 'soc_input', axi_ico, 'input')
