@@ -63,7 +63,7 @@ third_party/systemc_install/lib64/libsystemc.so:
 
 build-dramsys: build-systemc third_party/DRAMSys/libDRAMSys_Simulator.so
 
-third_party/DRAMSys/libDRAMSys_Simulator.so: third_party
+third_party/DRAMSys/libDRAMSys_Simulator.so:
 	mkdir -p third_party/DRAMSys
 	cp add_dramsyslib_patches/libDRAMSys_Simulator.so third_party/DRAMSys/
 
@@ -81,5 +81,3 @@ third_party/pulp-sdk:
 	tar -xvjf v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2
 
 dramsys_redmule_preparation: apply_patch build-systemc build-dramsys build-configs build-pulp_sdk
-
-https://github.com/pulp-platform/pulp-riscv-gnu-toolchain/releases/download/v1.0.16/v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2
