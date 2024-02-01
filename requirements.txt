@@ -3,5 +3,4 @@ six
 sphinx_rtd_theme
 numpy
 torch
-dump_utils
 
