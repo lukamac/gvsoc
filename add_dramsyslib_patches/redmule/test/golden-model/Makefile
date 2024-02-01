@@ -33,6 +33,8 @@ K ?= 3
 # FP format
 fp_fmt ?= FP16
 
+.PHONY: addmax addmin gemm maxmin minmax mulmax mulmin
+
 
 # The current Makefile can be used as follows:
 # make $(operation)      -> execute any of the supported GEMM-Ops operation (Z = (X op1 W) op2 Y)
