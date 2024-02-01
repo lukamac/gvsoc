@@ -97,7 +97,7 @@ clean_dramsys_preparation:
 build-pulp_sdk: third_party/pulp-sdk
 
 third_party/pulp-sdk:
-	cd third_party && git clone git@github.com:pulp-platform/pulp-sdk.git
+	cd third_party && git clone https://github.com/pulp-platform/pulp-sdk.git
 	cd third_party/pulp-sdk && \
 	wget https://github.com/pulp-platform/pulp-riscv-gnu-toolchain/releases/download/v1.0.16/v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2 &&\
 	tar -xvjf v1.0.16-pulp-riscv-gcc-centos-7.tar.bz2
