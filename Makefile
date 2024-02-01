@@ -1,4 +1,4 @@
-cd CMAKE_FLAGS ?= -j 6
+CMAKE_FLAGS ?= -j 6
 CMAKE ?= cmake
 
 TARGETS ?= rv32;rv64
