@@ -21,6 +21,9 @@ jobs:
           sudo pip3 install -r core/requirements.txt
           sudo pip3 install -r gapy/requirements.txt
           sudo pip3 install -r requirements.txt
+          source sourceme.sh
+          make drmasys_apply_patch
+          make configure -C pulp/pulp/redmule/run
       - name: build all targets
         run: |
           source sourceme.sh
