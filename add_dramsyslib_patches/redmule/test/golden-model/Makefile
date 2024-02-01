@@ -35,7 +35,7 @@ fp_fmt ?= FP16
 
 check_penv:
 	python3 -m venv $(PENV)
-	source .venv/bin/activate
+	source $(PENV)/bin/activate
 	pip3 install numpy
 	pip3 install torch
 
