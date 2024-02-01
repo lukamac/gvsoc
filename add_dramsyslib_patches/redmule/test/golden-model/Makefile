@@ -33,11 +33,6 @@ K ?= 3
 # FP format
 fp_fmt ?= FP16
 
-check_penv:
-	python3 -m venv $(PENV)
-	source $(PENV)/bin/activate
-	pip3 install numpy
-	pip3 install torch
 
 # The current Makefile can be used as follows:
 # make $(operation)      -> execute any of the supported GEMM-Ops operation (Z = (X op1 W) op2 Y)
@@ -45,89 +40,61 @@ check_penv:
 # between three 64x64 matrices, run:
 # `make clean gemm M=64 N=64 K=64`
 
-addmax: check_penv
+addmax: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)                           \
-	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
+	--txt_dir $(CUR_DIR)/$@/txt;              
 
-addmin: check_penv
+addmin: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)                           \
-	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
+	--txt_dir $(CUR_DIR)/$@/txt;              
 
-gemm: check_penv
+gemm: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)                           \
-	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
+	--txt_dir $(CUR_DIR)/$@/txt;              
 
-maxmin: check_penv
+maxmin: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)/inc                       \
-	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
+	--txt_dir $(CUR_DIR)/$@/txt;              
 
-minmax: check_penv
+minmax: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)                           \
 	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
 
-mulmax: check_penv
+mulmax: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)                           \
-	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
+	--txt_dir $(CUR_DIR)/$@/txt;              
 
-mulmin: check_penv
+mulmin: 
 	mkdir -p $@/txt;                          \
-	cd $(PENV);                               \
-	source ./bin/activate;                    \
 	cd $(CUR_DIR)/$(fp_fmt);                  \
 	python3 ./scripts/$@.py                   \
 	--m_size $(M) --n_size $(N) --k_size $(K) \
 	--inc_dir $(SW)                           \
-	--txt_dir $(CUR_DIR)/$@/txt;              \
-	cd $(PENV);                               \
-	deactivate
+	--txt_dir $(CUR_DIR)/$@/txt;              
 
 golden-clean:
 	rm -rf FP16/net_parameters.h
