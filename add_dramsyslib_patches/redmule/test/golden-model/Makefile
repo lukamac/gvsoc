@@ -34,14 +34,10 @@ K ?= 3
 fp_fmt ?= FP16
 
 check_penv:
-ifndef PENV
-	$(error PENV is undefined. Make sure to export       \
-	PENV=<absolute_path_your_pythonenv> before continue.)
 	python3 -m venv $(PENV)
 	source .venv/bin/activate
 	pip3 install numpy
 	pip3 install torch
-endif
 
 # The current Makefile can be used as follows:
 # make $(operation)      -> execute any of the supported GEMM-Ops operation (Z = (X op1 W) op2 Y)
