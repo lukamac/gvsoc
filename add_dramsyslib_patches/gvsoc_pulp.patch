@@ -12,9 +12,24 @@ index e9710c1..799fbf9 100644
 +add_subdirectory(redmule)
 \ No newline at end of file
 diff --git a/pulp/chips/pulp_open/cluster.json b/pulp/chips/pulp_open/cluster.json
-index 259971a..ae62a78 100644
+index 259971a..00e541f 100644
 --- a/pulp/chips/pulp_open/cluster.json
 +++ b/pulp/chips/pulp_open/cluster.json
+@@ -27,12 +27,12 @@
+     "l1": {
+         "mapping": {
+             "base": "0x10000000",
+-            "size": "0x00010000",
++            "size": "0x00100000",
+             "remove_offset": "0x10000000"
+         },
+         "ts_mapping": {
+             "base": "0x10100000",
+-            "size": "0x00010000",
++            "size": "0x00100000",
+             "remove_offset": "0x10100000"
+         },
+         "banking_factor": 2,
 @@ -144,6 +144,14 @@
              }
          },

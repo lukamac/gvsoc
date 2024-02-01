@@ -1,0 +1,18 @@
+diff --git a/rtos/pulpos/pulp/kernel/chips/pulp/link.ld b/rtos/pulpos/pulp/kernel/chips/pulp/link.ld
+index ea40735..8486770 100644
+--- a/rtos/pulpos/pulp/kernel/chips/pulp/link.ld
++++ b/rtos/pulpos/pulp/kernel/chips/pulp/link.ld
+@@ -3,10 +3,10 @@ OUTPUT_ARCH(riscv)
+ ENTRY( _start )
+ MEMORY
+ {
+-  L2           : ORIGIN = 0x1c000004, LENGTH = 0x0007fffc
++  L2           : ORIGIN = 0x1c000004, LENGTH = 0x000ffffc
+   L2_aliased   : ORIGIN = 0x00000004, LENGTH = 0x00003ffc
+-  L1                 : ORIGIN = 0x10000004, LENGTH = 0x0000fffc
+-  L1_aliased         : ORIGIN = 0x00000004, LENGTH = 0x0000fffc
++  L1                 : ORIGIN = 0x10000004, LENGTH = 0x000ffffc
++  L1_aliased         : ORIGIN = 0x00000004, LENGTH = 0x000ffffc
+ }
+ 
+ /*
