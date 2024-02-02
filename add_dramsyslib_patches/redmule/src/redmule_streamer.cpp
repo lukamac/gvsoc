@@ -121,9 +121,9 @@ int RedMule_Streamer::rw_data(int width, void* buf, strobe_t strb) {
 		}
 
 		for (int i = (offs % BYTES_PER_BANK) == 0 ? 0 : BYTES_PER_BANK - (offs % BYTES_PER_BANK); i < width; i += BYTES_PER_BANK) {
-			if (strb == 0) {
-				break;
-			}
+			// if (strb == 0) {
+			// 	break;
+			// }
 
 			if (i + BYTES_PER_BANK <= width) {
 				if ((strb & 0xF) == 0xF) {
@@ -284,7 +284,7 @@ int RedMule_Streamer::iterate(void* buf, strobe_t strb) {
 
 #else
 
-	latency = this->rw_data(sizeof(src_fmt_t) * (ARRAY_HEIGHT) * (PIPE_REGS + 1), buf, strb);
+	latency = this->rw_data(this->redmule->nb_tcdm_banks * 4, buf, strb);
 	// this->redmule->trace.msg("Stream Access Bytes: %d, With latency: %d cycles \n", (sizeof(src_fmt_t) * (ARRAY_HEIGHT) * (PIPE_REGS + 1)), latency);
 
 #endif

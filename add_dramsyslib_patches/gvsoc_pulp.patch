@@ -46,7 +46,7 @@ index 259971a..00e541f 100644
              "mapping": {
                  "base": "0x10201400",
 diff --git a/pulp/chips/pulp_open/cluster.py b/pulp/chips/pulp_open/cluster.py
-index 7078c50..89638b7 100644
+index 7078c50..fdb6496 100644
 --- a/pulp/chips/pulp_open/cluster.py
 +++ b/pulp/chips/pulp_open/cluster.py
 @@ -25,6 +25,7 @@ from pulp.timer.timer_v2 import Timer
@@ -67,18 +67,21 @@ index 7078c50..89638b7 100644
  
          #
          # Components
-@@ -124,6 +128,10 @@ class Cluster(st.Component):
+@@ -124,6 +128,13 @@ class Cluster(st.Component):
              # NE16
              ne16 = Ne16(self, 'ne16')
  
 +        if has_redmule:
-+            # NE16
-+            redmule = RedMule(self, 'redmule')
++            # RedMule
++            import math
++            l1_banking_factor = self.get_property('l1/banking_factor')
++            nb_l1_banks = 1<<int(math.log(nb_pe * l1_banking_factor, 2.0))
++            redmule = RedMule(self, 'redmule', nb_l1_banks)
 +
          # Icache controller
          icache_ctrl = Icache_ctrl(self, 'icache_ctrl')
      
-@@ -205,6 +213,10 @@ class Cluster(st.Component):
+@@ -205,6 +216,10 @@ class Cluster(st.Component):
              periph_ico.add_mapping('ne16', **self._reloc_mapping(self.get_property('peripherals/ne16/mapping')))
              self.bind(periph_ico, 'ne16', ne16, 'input')
  
@@ -89,7 +92,7 @@ index 7078c50..89638b7 100644
          # MCHAN
          self.bind(mchan, 'ext_irq_itf', self, 'dma_irq')
          self.bind(mchan, 'ext_itf', cluster_ico, 'input')
-@@ -237,6 +249,13 @@ class Cluster(st.Component):
+@@ -237,6 +252,13 @@ class Cluster(st.Component):
  
              self.bind(ne16, 'out', l1, 'ne16_in')
  

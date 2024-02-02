@@ -20,7 +20,9 @@ void RedMule::reset_sched() {
 }
 
 bool RedMule::preload_iter(int* latency) {
-    if (this->preload_cnt < ARRAY_WIDTH) {
+    int ITER_TOTAL = ARRAY_WIDTH * ARRAY_HEIGHT * (PIPE_REGS + 1) / this->nb_tcdm_banks;
+
+    if (this->preload_cnt < ITER_TOTAL) {
         *latency = this->buf_disamb(Y_BUF, -1);
     } else {
         *latency = this->buf_disamb(X_BUF, -1);
@@ -28,7 +30,7 @@ bool RedMule::preload_iter(int* latency) {
 
     this->preload_cnt++;
 
-    if (this->preload_cnt == 3 * ARRAY_WIDTH) {
+    if (this->preload_cnt == 3 * ITER_TOTAL) {
         this->preload_cnt = 0;
 
         return true;
@@ -206,24 +208,26 @@ bool RedMule::store_iter(int* latency) {
     }
 
 
-    switch (cycle_cnt) {
-        case 0:
-            *latency = this->subcycle_routine(false, Z_BUF, -1);
-            break;
+    // switch (cycle_cnt) {
+    //     case 0:
+    //         *latency = this->subcycle_routine(false, Z_BUF, -1);
+    //         break;
 
-        case 1:
-            *latency = this->subcycle_routine(false, Y_BUF, -1);
-            break;
+    //     case 1:
+    //         *latency = this->subcycle_routine(false, Y_BUF, -1);
+    //         break;
 
-        case ARRAY_HEIGHT - 1:
-            *latency = this->subcycle_routine(false, X_BUF, -1);
-            break;
+    //     case ARRAY_HEIGHT - 1:
+    //         *latency = this->subcycle_routine(false, X_BUF, -1);
+    //         break;
 
-        default:
-            *latency = this->subcycle_routine(false, SKIP, -1);
-    }
+    //     default:
+    //         *latency = this->subcycle_routine(false, SKIP, -1);
+    // }
+    *latency = 1;
+    this->cycle_cnt++;
 
-    if (this->cycle_cnt == ARRAY_HEIGHT) {
+    if (this->cycle_cnt == (ARRAY_WIDTH * ARRAY_HEIGHT * (PIPE_REGS + 1) * 4 / this->nb_tcdm_banks)) {
         this->cycle_cnt = 0;
         this->hypercycle_cnt = 0;
         this->subcycle_cnt = 0;

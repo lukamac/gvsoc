@@ -22,6 +22,8 @@ RedMule::RedMule(vp::ComponentConf &config)
 
 	this->buffers = RedMule_Buffers(this);
 
+	this->nb_tcdm_banks = get_js_config()->get("nb_tcdm_banks")->get_int();
+
 	//Event Handlers
     this->fsm_start_event = this->event_new(&RedMule::fsm_start_handler);
     this->fsm_event = this->event_new(&RedMule::fsm_handler);

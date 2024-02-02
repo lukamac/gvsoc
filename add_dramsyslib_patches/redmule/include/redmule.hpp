@@ -144,6 +144,8 @@ class RedMule : public vp::Component
 		vp::Trace trace;
 		vp::reg_32 state;
 
+		uint32_t nb_tcdm_banks;
+
 	private:
 		static vp::IoReqStatus hwpe_slave(vp::Block *__this, vp::IoReq *req);
 
