@@ -196,43 +196,43 @@ void RedMule_Buffers::compute_z() {
     }
 
 
-    this->redmule->trace.msg("COMPUTED:\n\n");
+    // this->redmule->trace.msg("COMPUTED:\n\n");
 
-    this->redmule->trace.msg("Y:\n");
-    for (int i = 0; i < 12; i++) {
-        for (int j = 0; j < 16; j++) {
-            this->redmule->trace.msg("0x%x, ", * (print_t *) &(this->y[this->y_offs + i][j]));
-        }
-        this->redmule->trace.msg("\n");
-    }
-    this->redmule->trace.msg("\n\n");
+    // this->redmule->trace.msg("Y:\n");
+    // for (int i = 0; i < 12; i++) {
+    //     for (int j = 0; j < 16; j++) {
+    //         this->redmule->trace.msg("0x%x, ", * (print_t *) &(this->y[this->y_offs + i][j]));
+    //     }
+    //     this->redmule->trace.msg("\n");
+    // }
+    // this->redmule->trace.msg("\n\n");
 
-    this->redmule->trace.msg("X:\n");
-    for (int i = 0; i < ARRAY_WIDTH; i++) {
-        for (int j = 0; j < this->n; j++) {
-            this->redmule->trace.msg("0x%x, ", * (print_t *) &(x[i][this->x_row_offs(j)]));
-        }
-        this->redmule->trace.msg("\n");
-    }
-    this->redmule->trace.msg("\n\n");
+    // this->redmule->trace.msg("X:\n");
+    // for (int i = 0; i < ARRAY_WIDTH; i++) {
+    //     for (int j = 0; j < this->n; j++) {
+    //         this->redmule->trace.msg("0x%x, ", * (print_t *) &(x[i][this->x_row_offs(j)]));
+    //     }
+    //     this->redmule->trace.msg("\n");
+    // }
+    // this->redmule->trace.msg("\n\n");
 
-    this->redmule->trace.msg("W:\n");
-    for (int i = 0; i < this->n; i++) {
-        for (int j = 0; j < 16; j++) {
-            this->redmule->trace.msg("0x%x, ", * (print_t *) &(this->w[i][j]));
-        }
-        this->redmule->trace.msg("\n");
-    }
-    this->redmule->trace.msg("\n\n");
+    // this->redmule->trace.msg("W:\n");
+    // for (int i = 0; i < this->n; i++) {
+    //     for (int j = 0; j < 16; j++) {
+    //         this->redmule->trace.msg("0x%x, ", * (print_t *) &(this->w[i][j]));
+    //     }
+    //     this->redmule->trace.msg("\n");
+    // }
+    // this->redmule->trace.msg("\n\n");
 
-    this->redmule->trace.msg("Z:\n");
-    for (int i = 0; i < 12; i++) {
-        for (int j = 0; j < 16; j++) {
-            this->redmule->trace.msg("0x%x, ", * (print_t *) &(this->z[i][j]));
-        }
-        this->redmule->trace.msg("\n");
-    }
-    this->redmule->trace.msg("\n\n");
+    // this->redmule->trace.msg("Z:\n");
+    // for (int i = 0; i < 12; i++) {
+    //     for (int j = 0; j < 16; j++) {
+    //         this->redmule->trace.msg("0x%x, ", * (print_t *) &(this->z[i][j]));
+    //     }
+    //     this->redmule->trace.msg("\n");
+    // }
+    // this->redmule->trace.msg("\n\n");
 
     this->x_offs += this->n + ((PIPE_REGS + 1) * ARRAY_HEIGHT - this->x_cols_lftovr ) % ((PIPE_REGS + 1) * ARRAY_HEIGHT);
 

@@ -98,6 +98,8 @@ int RedMule::subcycle_routine(bool skip_w, int label, strobe_t strb) {
         this->z_cycle_stores = 0;
     }
 
+    // this->trace.msg("Subcycle latency: %d \n", latency);
+
     return latency;
 }
 
@@ -107,7 +109,7 @@ void RedMule::first_iter_routine(int* latency) {
             *latency = this->subcycle_routine(false, Y_BUF, -1);
             break;
 
-        case ARRAY_HEIGHT - 1:
+        case PIPE_REGS - 1:
             *latency = this->subcycle_routine(false, X_BUF, -1);
             break;
 
@@ -118,7 +120,7 @@ void RedMule::first_iter_routine(int* latency) {
 
 void RedMule::standard_iter_routine(int* latency) {
     switch (cycle_cnt) {
-        case ARRAY_HEIGHT - 1:
+        case PIPE_REGS - 1:
             *latency = this->subcycle_routine(false, X_BUF, -1);
             break;
 
@@ -138,13 +140,20 @@ bool RedMule::compute_iter(int* latency) {
         this->standard_iter_routine(latency);
     }
 
-    if (this->cycle_cnt == ARRAY_HEIGHT) {
+    if (this->cycle_cnt == (PIPE_REGS + 1)) {
         this->cycle_cnt = 0;
         this->hypercycle_cnt++;
     }
 
-    if (this->hypercycle_cnt == this->register_file [REDMULE_REG_X_D1_STRIDE_PTR>>2] / sizeof(src_fmt_t) / ARRAY_WIDTH - 1) {
+    // this->trace.msg("this->cycle_cnt: %d, this->subcycle_cnt: %d, this->hypercycle_cnt: %d, Require: %d \n", \
+    //     this->cycle_cnt, this->subcycle_cnt, this->hypercycle_cnt, (this->register_file [REDMULE_REG_X_D1_STRIDE_PTR>>2] / sizeof(src_fmt_t) / ARRAY_WIDTH - 1));
+
+    if (this->hypercycle_cnt == (this->register_file [REDMULE_REG_X_ITER_PTR>>2] & 0x0000ffff)) {
         this->buffers.compute_z();
+        if (this->cycle_cnt != 0 || this->subcycle_cnt != 0)
+        {
+            this->trace.fatal("this->cycle_cnt: %d, this->subcycle_cnt: %d \n", this->cycle_cnt, this->subcycle_cnt);
+        }
         return true;
     }
 
@@ -154,6 +163,7 @@ bool RedMule::compute_iter(int* latency) {
 bool RedMule::store_iter(int* latency) {
     if (this->cycle_cnt == 0 && this->subcycle_cnt == 0) {
         this->w_cols_iters++;
+        this->trace.msg("w_cols_iters: %d, x_rows_iters: %d, hyper_require: %d \n", w_cols_iters, x_rows_iters, (this->register_file [REDMULE_REG_X_ITER_PTR>>2] & 0x0000ffff));
 
         if (this->w_cols_iters == (this->register_file [REDMULE_REG_W_ITER_PTR>>2] & 0x0000ffff)) {
             this->w_cols_iters = 0;
@@ -215,7 +225,8 @@ bool RedMule::store_iter(int* latency) {
 
     if (this->cycle_cnt == ARRAY_HEIGHT) {
         this->cycle_cnt = 0;
-        this->hypercycle_cnt = 1;
+        this->hypercycle_cnt = 0;
+        this->subcycle_cnt = 0;
 
         this->z_strb = -1;
         this->last_x_row = false;

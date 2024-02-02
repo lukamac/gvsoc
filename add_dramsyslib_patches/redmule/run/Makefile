@@ -34,4 +34,15 @@ run:
 
 	mkdir -p reports
 
-	cd reports; $(GVSOC_PATH)/install/bin/gvsoc --target=pulp-open-ddr --binary $(TEST_PATH)/BUILD/PULP/GCC_RISCV/redmule_test/redmule_test image flash run
+	cd reports; $(GVSOC_PATH)/install/bin/gvsoc --target=pulp-open-ddr --binary $(TEST_PATH)/BUILD/PULP/GCC_RISCV/redmule_test/redmule_test image flash run --trace=redmule
+
+diff:
+	cd .. && \
+	git diff ../../../add_dramsyslib_patches/redmule/ . | grep "new file mode " -B 1 | GREP_COLORS='ms=1;32' grep "diff " --color=always && \
+	git diff ../../../add_dramsyslib_patches/redmule/ . | grep "delete file mode " -B 1 | GREP_COLORS='ms=1;31' grep "diff " --color=always && \
+	git diff ../../../add_dramsyslib_patches/redmule/ . | grep "diff " -A 1 | GREP_COLORS='ms=1;34' grep -v "file mode" --color=always && \
+	echo "Done"
+
+clean:
+	rm -rf reports
+	rm -rf ../test/BUILD

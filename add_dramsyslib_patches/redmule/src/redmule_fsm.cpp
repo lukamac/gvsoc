@@ -24,6 +24,8 @@ void RedMule::fsm_start_handler(vp::Block *__this, vp::ClockEvent *event) {
 	_this->trace.msg("\tW TOT LEN:\t%d\n", _this->register_file [REDMULE_REG_W_TOT_LEN_PTR>>2]);
 	_this->trace.msg("\tX TOT LEN:\t%d\n", _this->register_file [REDMULE_REG_X_TOT_LEN_PTR>>2]);
 
+	_this->trace.msg("\tHyper Cycle:\t%d\n", _this->register_file [REDMULE_REG_X_D1_STRIDE_PTR>>2]);
+
 	_this->trace.msg("Configuring z_stream:\n");
 
 	_this->z_stream.configure(
@@ -128,24 +130,36 @@ int RedMule::fsm() {
 
 	int latency = 0;
     switch (this->state.get()) {
-	    case STARTING:			
+	    case STARTING:
+	    	prel_cnt++;		
 			if (this->preload_iter(&latency))
 				next_state = COMPUTING;
 
             break;
 
 	    case COMPUTING:
-			if (this->compute_iter(&latency))
+	    	comp_cnt++;
+	    	compute_cnt++;
+			if (this->compute_iter(&latency)){
 				next_state = STORING;
-			
+				this->trace.msg("Compute used: %d, then to STROE \n", comp_cnt);
+				comp_cnt = 0;
+				block_iter++;
+			}
             break;
 
 	    case STORING:
+	    	st_cnt++;
 			if (this->store_iter(&latency)) {
 				if (this->done) {
+					this->trace.msg("Preload Cycle: %d \n", prel_cnt);
+			    	this->trace.msg("Compute Cycle: %d \n", compute_cnt);
+			    	this->trace.msg("Store Cycle: %d \n", st_cnt);
+			    	this->trace.msg("Block iteration: %d \n", block_iter);
 					next_state = FINISHED;
 				} else {
 					next_state = COMPUTING;
+					// this->trace.msg("To Compute \n");
 				}
 			}
 

@@ -285,6 +285,7 @@ int RedMule_Streamer::iterate(void* buf, strobe_t strb) {
 #else
 
 	latency = this->rw_data(sizeof(src_fmt_t) * (ARRAY_HEIGHT) * (PIPE_REGS + 1), buf, strb);
+	// this->redmule->trace.msg("Stream Access Bytes: %d, With latency: %d cycles \n", (sizeof(src_fmt_t) * (ARRAY_HEIGHT) * (PIPE_REGS + 1)), latency);
 
 #endif
 
