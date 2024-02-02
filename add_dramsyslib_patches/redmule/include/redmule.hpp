@@ -205,6 +205,13 @@ class RedMule : public vp::Component
 		RedMule_Streamer w_stream;
 
 		RedMule_Buffers buffers;
+
+		//Performance Counter
+		uint32_t prel_cnt;
+		uint32_t comp_cnt;
+		uint32_t st_cnt;
+
+		uint32_t block_iter;
 };
 
 #endif
