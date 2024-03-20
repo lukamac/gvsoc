@@ -46,7 +46,7 @@ index 259971a..00e541f 100644
              "mapping": {
                  "base": "0x10201400",
 diff --git a/pulp/chips/pulp_open/cluster.py b/pulp/chips/pulp_open/cluster.py
-index 7078c50..fdb6496 100644
+index 7078c50..ccd9347 100644
 --- a/pulp/chips/pulp_open/cluster.py
 +++ b/pulp/chips/pulp_open/cluster.py
 @@ -25,6 +25,7 @@ from pulp.timer.timer_v2 import Timer
@@ -67,6 +67,15 @@ index 7078c50..fdb6496 100644
  
          #
          # Components
+@@ -112,7 +116,7 @@ class Cluster(st.Component):
+         demux_periph_ico = Router(self, 'demux_periph_ico')
+ 
+         # MCHAN
+-        mchan = Mchan(self, 'dma', nb_channels=nb_pe+1)
++        mchan = Mchan(self, 'dma', nb_channels=nb_pe+1, max_nb_ext_read_req=256, max_nb_ext_write_req=256, max_burst_length=512, global_queue_depth=64)
+ 
+         # Timer
+         timer = Timer(self, 'timer')
 @@ -124,6 +128,13 @@ class Cluster(st.Component):
              # NE16
              ne16 = Ne16(self, 'ne16')
