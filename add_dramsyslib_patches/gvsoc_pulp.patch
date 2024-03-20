@@ -118,10 +118,53 @@ index 4a38b6e..05e5934 100644
  
          for i in range(0, 4):
              self.bind(self, 'dma_in_%d' % i, interleaver, 'in_%d' % (nb_pe + i))
+diff --git a/pulp/chips/pulp_open/pulp_open.py b/pulp/chips/pulp_open/pulp_open.py
+index 1e9fd24..33e61ce 100644
+--- a/pulp/chips/pulp_open/pulp_open.py
++++ b/pulp/chips/pulp_open/pulp_open.py
+@@ -47,13 +47,13 @@ class Pulp_open(st.Component):
+         padframe = Padframe(self, 'padframe', config_file=padframe_config_file)
+ 
+         # Soc clock domain
+-        soc_clock = Clock_domain(self, 'soc_clock_domain', frequency=50000000)
++        soc_clock = Clock_domain(self, 'soc_clock_domain', frequency=500000000)
+ 
+         # Clusters clock domains
+         cluster_clocks = []
+         for cid in range(0, nb_cluster):
+             cluster_name = get_cluster_name(cid)
+-            cluster_clocks.append(Clock_domain(self, cluster_name + '_clock', frequency=50000000))
++            cluster_clocks.append(Clock_domain(self, cluster_name + '_clock', frequency=500000000))
+ 
+         # Clusters
+         clusters = []
+@@ -65,11 +65,11 @@ class Pulp_open(st.Component):
+         soc = Soc(self, 'soc', parser, config_file=soc_config_file, chip=self, cluster=clusters[0])
+ 
+         # Fast clock
+-        fast_clock = Clock_domain(self, 'fast_clock', frequency=24576063*2)
++        fast_clock = Clock_domain(self, 'fast_clock', frequency=245760630*2)
+         fast_clock_generator = Clock_generator(self, 'fast_clock_generator', powered_on=False, powerup_time=200000000)
+ 
+         # Ref clock
+-        ref_clock = Clock_domain(self, 'ref_clock', frequency=65536)
++        ref_clock = Clock_domain(self, 'ref_clock', frequency=6553600)
+         ref_clock_generator = Clock_generator(self, 'ref_clock_generator')
+ 
+         # AXI proxy
 diff --git a/pulp/chips/pulp_open/soc.py b/pulp/chips/pulp_open/soc.py
-index 26403fb..aee187e 100644
+index 26403fb..1ed17a7 100644
 --- a/pulp/chips/pulp_open/soc.py
 +++ b/pulp/chips/pulp_open/soc.py
+@@ -186,7 +186,7 @@ class Soc(st.Component):
+         for cid in range(0, nb_cluster):
+             self.bind(fll_cluster, 'clock_out', self, get_cluster_name(cid) + '_fll')
+ 
+-        periph_clock = Clock_domain(self, 'periph_clock', frequency=50000000)
++        periph_clock = Clock_domain(self, 'periph_clock', frequency=500000000)
+ 
+         self.bind(fll_periph, 'clock_out', periph_clock, 'clock_in')
+         self.bind(periph_clock, 'out', udma, 'periph_clock')
 @@ -261,8 +261,8 @@ class Soc(st.Component):
          self.bind(soc_ico, 'axi_proxy', axi_ico, 'input')
          self.bind(soc_ico, 'ddr', axi_ico, 'input')
@@ -133,3 +176,17 @@ index 26403fb..aee187e 100644
  
          self.bind(axi_ico, 'soc', soc_ico, 'axi_slave')
          self.bind(self, 'soc_input', axi_ico, 'input')
+diff --git a/pulp/fll/fll_v1_impl.cpp b/pulp/fll/fll_v1_impl.cpp
+index fcc9c5f..5e8a4f1 100644
+--- a/pulp/fll/fll_v1_impl.cpp
++++ b/pulp/fll/fll_v1_impl.cpp
+@@ -208,6 +208,9 @@ void fll::fll_check_state()
+     // Non-locked mode, just keep the frequency out of the oscillator
+   }
+ 
++  //TODO: Here is just a <Dirty Hack> to boost frequncy of pulp-open chips
++  //      In the end, we still need to change this in a proper way
++  frequency = frequency * 32;
+ 
+   this->trace.msg("Setting new frequency (frequency: %d Hz)\n", frequency);
+   this->fll_clock_itf.set_frequency(frequency);
