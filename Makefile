@@ -81,5 +81,13 @@ core/models/memory/dramsys_configs:
 
 dramsys_preparation: build-systemc build-dramsys build-configs
 
+occamy_pdk_preparation: third_party/occamy
+
+third_party/occamy:
+	cd third_party; git clone git@github.com:pulp-platform/occamy.git; \
+	cd occamy; git reset --hard ed0b98162fae196faff96a972f861a0aa4593227; \
+	git submodule update --init --recursive; bender vendor init; \
+	cd target/sim; make DEBUG=ON sw
+
 clean_dramsys_preparation:
 	rm -rf third_party
