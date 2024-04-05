@@ -3,3 +3,4 @@ argparse>=1.4
 prettytable
 hjson
 tabulate
+mako
