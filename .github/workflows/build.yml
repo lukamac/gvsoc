@@ -25,6 +25,7 @@ jobs:
           source sourceme.sh
           make dramsys_preparation
           make all TARGETS=pulp-open-ddr
+          make all TARGETS=occamy
           make all TARGETS=rv64
           make all TARGETS=pulp-open
           make all TARGETS=pulp.spatz.spatz
@@ -32,6 +33,7 @@ jobs:
         run: |
           source sourceme.sh
           ./install/bin/gvsoc --target=pulp-open --binary examples/pulp-open/hello image flash run
+          ./install/bin/gvsoc --target=occamy --binary examples/occamy/offload-multi_cluster.elf --debug-binary examples/occamy/multi_cluster.elf run
           ./install/bin/gvsoc --target=rv64 --binary examples/pk --arg ./examples/hello run
           ./install/bin/gvsoc --target=pulp-open-ddr --binary add_dramsyslib_patches/dma_dram_test.bin image flash run
 
