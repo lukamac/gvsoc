@@ -1,0 +1,13 @@
+diff --git a/pulp/CMakeLists.txt b/pulp/CMakeLists.txt
+index e9710c1..799fbf9 100644
+--- a/pulp/CMakeLists.txt
++++ b/pulp/CMakeLists.txt
+@@ -16,4 +16,5 @@ add_subdirectory(soc_eu)
+ add_subdirectory(stdout)
+ add_subdirectory(neureka)
+ add_subdirectory(wmem)
+-add_subdirectory(spatz)
+\ No newline at end of file
++add_subdirectory(spatz)
++add_subdirectory(redmule)
+\ No newline at end of file
