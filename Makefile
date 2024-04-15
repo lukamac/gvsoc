@@ -95,5 +95,13 @@ third_party/occamy:
 	git submodule update --init --recursive; bender vendor init; \
 	cd target/sim; make DEBUG=ON sw
 
+snitch_pdk_preparation: third_party/snitch_cluster
+
+third_party/snitch_cluster:
+	cd third_party; git clone third_party/snitch_cluster; \
+	cd snitch_cluster; git submodule update --init --recursive; source iis-setup.sh; \
+	cp -rf ../../add_dramsyslib_patches/snitch_app/ target/snitch_cluster/sw/apps/redmule; \
+	cd target/snitch_cluster; sed -i '42aAPPS += sw/apps/redmule' sw.mk; make DEBUG=ON sw;
+
 clean_dramsys_preparation:
 	rm -rf third_party
