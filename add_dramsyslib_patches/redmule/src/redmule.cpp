@@ -30,6 +30,7 @@ RedMule::RedMule(vp::ComponentConf &config)
     this->fsm_end_event = this->event_new(&RedMule::fsm_end_handler);
 
 	this->state.set(IDLE);
+	this->sync_req = NULL;
 
 	this->trace.msg("Build complete\n");
 }
@@ -82,17 +83,44 @@ vp::IoReqStatus RedMule::hwpe_slave(vp::Block *__this, vp::IoReq *req) {
 					break;
 
 				case REDMULE_SOFT_CLEAR:
+					_this->state.set(IDLE);
+					_this->trace.msg("[REDMULE_SOFT_CLEAR] reset to IDLE\n");
 					break;
 
 				default:
-					_this->trace.msg("Usupported command (%x)\n", address);          
+					_this->trace.msg("Usupported write command (%x)\n", address);          
 			}
 		}
+
+		return vp::IO_REQ_OK;
     } else {
     	_this->trace.msg("Read request\n");
+    	uint8_t *data = req->get_data();
+    	switch (address) {
+				case REDMULE_STATUS:
+					if (_this->state.get() == FINISHED)
+					{
+						_this->trace.msg("[REDMULE_STATUS] Got FINISHED\n");
+						return vp::IO_REQ_OK;
+					} else {
+						if (_this->sync_req != NULL)
+						{
+							_this->trace.fatal("[REDMULE_STATUS] read while sync_req already set");
+						}
+
+						_this->sync_req = req;
+						_this->trace.msg("[REDMULE_STATUS] Got RUNNING\n");
+						return vp::IO_REQ_PENDING;
+					}
+					break;
+
+				default:
+					return vp::IO_REQ_OK;
+					_this->trace.msg("Usupported read command (%x)\n", address);          
+			}
     }
 
-    return vp::IO_REQ_OK;
+    
 }
 
 int RedMule::build() {

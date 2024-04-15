@@ -214,6 +214,9 @@ class RedMule : public vp::Component
 		uint32_t st_cnt;
 
 		uint32_t block_iter;
+
+		//synchronization
+		vp::IoReq *sync_req;
 };
 
 #endif

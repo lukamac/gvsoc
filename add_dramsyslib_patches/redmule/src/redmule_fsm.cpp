@@ -106,9 +106,11 @@ void RedMule::fsm_end_handler(vp::Block *__this, vp::ClockEvent *event) {
     RedMule* _this = (RedMule *) __this;
 	_this->buffers.free_buffers();
 
-    _this->state.set(IDLE);
-
-	_this->irq.sync(true);
+	if (_this->sync_req != NULL)
+	{
+		_this->sync_req->get_resp_port()->resp(_this->sync_req);
+		_this->sync_req = NULL;
+	}
 }
 
 void RedMule::fsm_loop() {
@@ -156,6 +158,11 @@ int RedMule::fsm() {
 			    	this->trace.msg("Compute Cycle: %d \n", compute_cnt);
 			    	this->trace.msg("Store Cycle: %d \n", st_cnt);
 			    	this->trace.msg("Block iteration: %d \n", block_iter);
+			    	prel_cnt = 0;
+			    	comp_cnt = 0;
+			    	compute_cnt = 0;
+			    	st_cnt = 0;
+			    	block_iter = 0;
 					next_state = FINISHED;
 				} else {
 					next_state = COMPUTING;
