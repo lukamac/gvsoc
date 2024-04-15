@@ -93,6 +93,8 @@ third_party/occamy:
 	cd third_party; git clone git@github.com:pulp-platform/occamy.git; \
 	cd occamy; git reset --hard ed0b98162fae196faff96a972f861a0aa4593227; \
 	git submodule update --init --recursive; bender vendor init; \
+	git apply ../../add_dramsyslib_patches/occamy_modify/occamy.patch; \
+	cp -rfv ../../add_dramsyslib_patches/occamy_modify/test target/sim/sw/device/apps/blas; \
 	cd target/sim; make DEBUG=ON sw
 
 snitch_pdk_preparation: third_party/snitch_cluster
