@@ -1,0 +1,80 @@
+diff --git a/models/memory/dramsys.cpp b/models/memory/dramsys.cpp
+index e8903045..71c23b18 100644
+--- a/models/memory/dramsys.cpp
++++ b/models/memory/dramsys.cpp
+@@ -142,7 +142,7 @@ void ddr::paraSendRequest(vp::IoReq *req){
+     //Basic information
+     uint64_t req_start_addr = (offset >> GRAN_CLOG) << GRAN_CLOG;
+     uint64_t num_req = 1 + (((offset + size - 1) - req_start_addr) >> GRAN_CLOG);
+-    trace.msg("---- Req Info: aligned addr->0x%x, #DRAM requests->%d \n",req_start_addr, num_req);
++    trace.msg(5,"---- Req Info: aligned addr->0x%x, #DRAM requests->%d \n",req_start_addr, num_req);
+ 
+     //Generate masks and data queue
+     std::queue<int> mask_q, mask_d;
+@@ -164,11 +164,11 @@ void ddr::paraSendRequest(vp::IoReq *req){
+     //splite up for each request
+     for (int iter = 0; iter < num_req; ++iter)
+     {
+-        if (req->get_is_write()) trace.msg("---- Write Data List of DRAM REQ #%d \n", iter);
++        if (req->get_is_write()) trace.msg(6,"---- Write Data List of DRAM REQ #%d \n", iter);
+         //Write mask and data to buffer
+         for (int i = 0; i < GRANULARITY; ++i)
+         {
+-            if (req->get_is_write()) trace.msg("-------- iter %d Put byte %d valid %d \n", i, (int)data_q.front(), mask_q.front());
++            if (req->get_is_write()) trace.msg(6,"-------- iter %d Put byte %d valid %d \n", i, (int)data_q.front(), mask_q.front());
+             dram_write_buffer(dram_id, data_q.front(), i);
+             dram_write_strobe(dram_id, mask_q.front(), i);
+             data_q.pop();
+@@ -186,7 +186,7 @@ void ddr::paraSendRequest(vp::IoReq *req){
+     if (!req->get_is_write())
+     {
+         pending_read_req_queue.push_back(pair);
+-        trace.msg("---- Add in Pending list: mask length->%d \n",pair.second.size());
++        trace.msg(6,"---- Add in Pending list: mask length->%d \n",pair.second.size());
+     }
+ 
+ }
+@@ -199,7 +199,7 @@ vp::IoReqStatus ddr::req(vp::Block *__this, vp::IoReq *req)
+     uint8_t *data = req->get_data();
+     uint64_t size = req->get_size();
+ 
+-    _this->trace.msg("IO access (offset: 0x%x, size: 0x%x, is_write: %d)\n", offset, size, req->get_is_write());
++    _this->trace.msg("[IO access] addr=0x%x, size=0x%x, write=%d\n", offset, size, req->get_is_write());
+ 
+     if (_this->dram_can_accept_req(_this->dram_id))
+     {
+@@ -208,7 +208,7 @@ vp::IoReqStatus ddr::req(vp::Block *__this, vp::IoReq *req)
+         return vp::IO_REQ_PENDING;
+     }else{
+         _this->denied_req_queue.push(req);
+-        _this->trace.msg("---- Add in denied request list \n");
++        _this->trace.msg(6,"---- Add in denied request list \n");
+         return vp::IO_REQ_DENIED;
+     }
+ }
+@@ -216,7 +216,6 @@ vp::IoReqStatus ddr::req(vp::Block *__this, vp::IoReq *req)
+ void ddr::rspCallback(void *__this, int is_write){
+     ddr *_this = (ddr *)__this;
+     int rep_byte_int, mask;
+-    _this->trace.msg("---- Response Callback Triggered \n");
+ 
+     if (is_write)
+     {
+@@ -240,7 +239,7 @@ void ddr::rspCallback(void *__this, int is_write){
+             mask = _this->pending_read_req_queue.front().second.front();
+             _this->pending_read_req_queue.front().second.pop();
+ 
+-            _this->trace.msg("-------- iter %d Get byte %d valid %d \n", read_ptr, rep_byte_int, (read_ptr >= start_ptr && read_ptr < end_ptr));
++            _this->trace.msg(6, "                                                            ------ iter %d Get byte %d valid %d \n", read_ptr, rep_byte_int, (read_ptr >= start_ptr && read_ptr < end_ptr));
+ 
+             //Fill read data
+             if (read_ptr >= start_ptr && read_ptr < end_ptr)
+@@ -251,7 +250,7 @@ void ddr::rspCallback(void *__this, int is_write){
+             //Check mask list size, response request, pop pending req in list
+             if (_this->pending_read_req_queue.front().second.size() == 0)
+             {
+-                _this->trace.msg("---- Response read \n");
++                _this->trace.msg("                                                            [IO Response] addr=0x%x\n", req->get_addr());
+                 req->get_resp_port()->resp(req);
+                 _this->pending_read_req_queue.pop_front();
+             }

@@ -38,6 +38,9 @@ SYSTEMC_GIT_URL := https://github.com/accellera-official/systemc.git
 SYSTEMC_INSTALL_DIR := $(PWD)/third_party/systemc_install
 
 redmule_perparation:
+	if cd core && git apply --check ../add_dramsyslib_patches/gvsoc_core.patch; then \
+		git apply ../add_dramsyslib_patches/gvsoc_core.patch;\
+	fi
 	if cd pulp && git apply --check ../add_dramsyslib_patches/gvsoc_pulp.patch; then \
 		git apply ../add_dramsyslib_patches/gvsoc_pulp.patch;\
 	fi
