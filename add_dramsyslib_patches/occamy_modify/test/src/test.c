@@ -27,6 +27,21 @@ void axpy(uint32_t l, float a, float *x, float *y, float *z) {
 
 int main()
 {
+	float *local_x, *remote_x;
+	local_x  = 0x10000000 + (0x40000 * snrt_cluster_idx());
+	remote_x = 0xc0000000;
+	// Copy data in TCDM
+	if (snrt_cluster_idx() < 24)
+	{
+		if (snrt_is_dm_core()) {
+	        size_t size = 65536;
+	        snrt_dma_start_1d(local_x, remote_x, size);
+	        snrt_dma_wait_all();
+	    }
+	}
+	    
+    snrt_cluster_hw_barrier();
+
 	if (snrt_cluster_core_idx() == 0)
 	{
 		redmule_cfg(M_SIZE, N_SIZE, K_SIZE, gemm_ops);
@@ -35,7 +50,7 @@ int main()
 		redmule_z_add_set(z);
 		redmule_y_add_set(y);
 		hwpe_trigger_job();
-		while(hwpe_get_status()==0);
+		hwpe_get_status();
 		hwpe_soft_clear();
 		redmule_cfg(M_SIZE, N_SIZE, K_SIZE, gemm_ops);
 		redmule_x_add_set(x);
@@ -43,7 +58,7 @@ int main()
 		redmule_z_add_set(z);
 		redmule_y_add_set(y);
 		hwpe_trigger_job();
-		while(hwpe_get_status()==0);
+		hwpe_get_status();
 	}
 	return 0;
 }
