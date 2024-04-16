@@ -1,3 +1,132 @@
+diff --git a/occamy.py b/occamy.py
+index f0fd40e..925b20d 100644
+--- a/occamy.py
++++ b/occamy.py
+@@ -33,7 +33,9 @@ from pulp.chips.occamy.soc_reg import SocReg
+ from pulp.chips.occamy.quadrant import Quadrant
+ import pulp.chips.occamy.occamy_arch
+ from pulp.snitch.zero_mem import ZeroMem
++from pulp.cluster.l1_interleaver import L1_interleaver
+ import memory.dramsys
++import math
+ 
+ GAPY_TARGET = True
+ 
+@@ -65,6 +67,20 @@ class Soc(gvsoc.systree.Component):
+         # Wide 512 bits router
+         wide_axi = router.Router(self, 'wide_axi', bandwidth=64)
+ 
++        # HBM or SOC Demux at Qaudrants Ports
++        hbm_soc_demuxs = []
++        for id in range(0, arch.nb_quadrant):
++            hbm_soc_demuxs.append(router.Router(self, f'hbm_soc_demux_{id}', bandwidth=64))
++
++        #HBM Channel routers
++        hbm_mst_ports = []
++        for id in range(0, arch.nb_quadrant):
++            hbm_mst_ports.append(router.Router(self, f'hbm_mst_ports_{id}', bandwidth=64))
++
++        #HBM Interlever (4096 Bytes Granularity)
++        hbm_interleaver = L1_interleaver(self, 'hbm_interleaver', nb_slaves=arch.nb_hbm_channels,
++            nb_masters=arch.nb_quadrant, interleaving_bits=int(math.log2(4096)))
++
+         # Qaudrants
+         quadrants = []
+         for id in range(0, arch.nb_quadrant):
+@@ -126,11 +142,24 @@ class Soc(gvsoc.systree.Component):
+ 
+         # Wide 512 bits router
+         for id in range(0, arch.nb_quadrant):
+-            quadrants[id].o_WIDE_SOC(wide_axi.i_INPUT())
++            quadrants[id].o_WIDE_SOC(hbm_soc_demuxs[id].i_INPUT())
++            hbm_soc_demuxs[id].o_MAP(wide_axi.i_INPUT())
++            hbm_soc_demuxs[id].o_MAP(hbm_mst_ports[id].i_INPUT(),base=arch.hbm_1_alias.base, size=arch.hbm_1_alias.size, rm_base=True)
+             wide_axi.o_MAP ( quadrants[id].i_WIDE_INPUT(), base=arch.quadrant_base(id), size=arch.quadrant.size, rm_base=False )
+ 
+-        # HBM
+-        wide_axi.o_MAP ( self.i_HBM(), base=arch.hbm_0_alias.base, size=arch.hbm_0_alias.size, rm_base=True, latency=100 )
++        # HBM interconnect master
++        for id in range(0, arch.nb_quadrant):
++            hbm_mst_ports[id].add_mapping("hbm_int_mst");
++            self.bind(hbm_mst_ports[id],"hbm_int_mst", hbm_interleaver,f'in_{id}')
++
++        # HBM interconnect slave
++        for i in range(0, arch.nb_hbm_channels):
++            self.bind(hbm_interleaver, 'out_%d' % i, self, f'hbm_chan_{i}')
++
++        # hbm_mst_ports[0].o_MAP(self.i_HBM_CHAN(0))
++
++        # Main Simple Memory
++        wide_axi.o_MAP ( self.i_MEM(), base=arch.hbm_0_alias.base, size=arch.hbm_0_alias.size, rm_base=True, latency=100 )
+         narrow_axi.o_MAP ( wide_axi.i_INPUT(), base=arch.hbm_0_alias.base, size=arch.hbm_0_alias.size, rm_base=False )
+ 
+         # ROM
+@@ -173,11 +202,14 @@ class Soc(gvsoc.systree.Component):
+         loader.o_START(host.i_FETCHEN())
+         loader.o_ENTRY(host.i_ENTRY())
+ 
+-    def i_HBM(self) -> gvsoc.systree.SlaveItf:
+-        return gvsoc.systree.SlaveItf(self, 'hbm', signature='io')
++    def i_MEM(self) -> gvsoc.systree.SlaveItf:
++        return gvsoc.systree.SlaveItf(self, 'mem', signature='io')
+ 
+-    def o_HBM(self, itf: gvsoc.systree.SlaveItf):
+-        self.itf_bind('hbm', itf, signature='io')
++    def o_MEM(self, itf: gvsoc.systree.SlaveItf):
++        self.itf_bind('mem', itf, signature='io')
++
++    def i_HBM_CHAN(self, port: int) -> gvsoc.systree.SlaveItf:
++        return gvsoc.systree.SlaveItf(self, f'hbm_chan_{port}', signature='io')
+ 
+ 
+ 
+@@ -188,10 +220,14 @@ class Occamy(gvsoc.systree.Component):
+ 
+         soc = Soc(self, 'soc', arch.soc, binary, debug_binaries)
+ 
+-        soc.o_HBM(self.i_HBM())
++        soc.o_MEM(self.i_MEM())
++
++        #Binding on HBM Channels
++        for i in range(0, arch.nb_hbm_channels):
++            self.bind(soc, f'hbm_chan_{i}', self, f'hbm_chan_{i}')
+ 
+-    def i_HBM(self) -> gvsoc.systree.SlaveItf:
+-        return gvsoc.systree.SlaveItf(self, 'hbm', signature='io')
++    def i_MEM(self) -> gvsoc.systree.SlaveItf:
++        return gvsoc.systree.SlaveItf(self, 'mem', signature='io')
+ 
+ 
+ 
+@@ -205,7 +241,7 @@ class OccamyBoard(gvsoc.systree.Component):
+         if args.binary is not None:
+             debug_binaries.append(args.binary)
+ 
+-        clock = Clock_domain(self, 'clock', frequency=10000000)
++        clock = Clock_domain(self, 'clock', frequency=1000000000)
+ 
+         arch = pulp.chips.occamy.occamy_arch.OccamyArch(self)
+ 
+@@ -218,7 +254,18 @@ class OccamyBoard(gvsoc.systree.Component):
+ 
+         self.bind(clock, 'out', chip, 'clock')
+         self.bind(clock, 'out', mem, 'clock')
+-        self.bind(chip, 'hbm', mem, 'input')
++        self.bind(chip, 'mem', mem, 'input')
++
++        #Main HBM Channels
++        hbm_channels = []
++        for i in range(0, arch.nb_hbm_channels):
++            hbm_channels.append(memory.dramsys.Dramsys(self, f'hbm_chan_{i}'))
++            pass
++
++        #Binding on HBM Channels
++        for i in range(0, arch.nb_hbm_channels):
++            self.bind(clock, 'out', hbm_channels[i], 'clock')
++            self.bind(chip, f'hbm_chan_{i}', hbm_channels[i], 'input')
+ 
+ 
+ 
 diff --git a/pulp/CMakeLists.txt b/pulp/CMakeLists.txt
 index e9710c1..799fbf9 100644
 --- a/pulp/CMakeLists.txt
@@ -11,6 +140,73 @@ index e9710c1..799fbf9 100644
 +add_subdirectory(spatz)
 +add_subdirectory(redmule)
 \ No newline at end of file
+diff --git a/pulp/chips/occamy/occamy_arch.py b/pulp/chips/occamy/occamy_arch.py
+index 186eb9d..00a6876 100644
+--- a/pulp/chips/occamy/occamy_arch.py
++++ b/pulp/chips/occamy/occamy_arch.py
+@@ -23,6 +23,7 @@ class OccamyArchProperties:
+         self.nb_quadrant             = 6
+         self.nb_cluster_per_quadrant = 4
+         self.nb_core_per_cluster     = 9
++        self.nb_hbm_channels         = 8
+         self.hbm_size                = 0x80000000
+         self.hbm_type                = 'simple'
+ 
+@@ -64,6 +65,7 @@ class OccamyArch:
+ 
+         self.chip = OccamyArch.Chip(properties)
+         self.hbm = OccamyArch.Hbm(properties)
++        self.nb_hbm_channels = properties.nb_hbm_channels
+ 
+     class Hbm:
+ 
+@@ -76,11 +78,13 @@ class OccamyArch:
+         def __init__(self, properties):
+ 
+             self.soc = OccamyArch.Chip.Soc(properties)
++            self.nb_hbm_channels = properties.nb_hbm_channels
+ 
+         class Soc:
+ 
+             def __init__(self, properties):
+                 self.nb_quadrant = properties.nb_quadrant
++                self.nb_hbm_channels = properties.nb_hbm_channels
+                 current_hartid = 0
+ 
+                 self.debug          = Area(    0x0000_0000,     0x0000_0fff)
+diff --git a/pulp/idma/be/idma_be_axi.cpp b/pulp/idma/be/idma_be_axi.cpp
+index fd38e17..5a15ce4 100644
+--- a/pulp/idma/be/idma_be_axi.cpp
++++ b/pulp/idma/be/idma_be_axi.cpp
+@@ -36,7 +36,8 @@ IDmaBeAxi::IDmaBeAxi(vp::Component *idma, std::string itf_name, IdmaBeProducer *
+     this->be = be;
+ 
+     // Declare master port to AXI interface
+-    idma->new_master_port(itf_name, &this->ico_itf);
++    this->ico_itf.set_resp_meth(&IDmaBeAxi::axi_response);
++    idma->new_master_port(itf_name, &this->ico_itf, this);
+ 
+     // Declare our own trace so that we can individually activate traces
+     this->traces.new_trace("trace", &this->trace, vp::DEBUG);
+@@ -238,16 +239,17 @@ void IDmaBeAxi::axi_response(vp::Block *__this, vp::IoReq *req)
+     // on latency
+     if (req->get_is_write())
+     {
++        _this->trace.msg("[iDMA] axi_response write\n");
+         _this->write_handle_req_end(req);
+     }
+     else
+     {
++        _this->trace.msg("[iDMA] axi_response read\n");
+         _this->read_handle_req_end(req);
+     }
+ }
+ 
+ 
+-
+ void IDmaBeAxi::write_burst(uint64_t base, uint64_t size)
+ {
+     this->enqueue_burst(base, size, true);
 diff --git a/pulp/snitch/snitch_cluster/snitch_cluster.py b/pulp/snitch/snitch_cluster/snitch_cluster.py
 index 6bd54f1..92f3983 100644
 --- a/pulp/snitch/snitch_cluster/snitch_cluster.py
