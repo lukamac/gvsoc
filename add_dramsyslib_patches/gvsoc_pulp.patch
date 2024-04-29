@@ -208,7 +208,7 @@ index fd38e17..5a15ce4 100644
  {
      this->enqueue_burst(base, size, true);
 diff --git a/pulp/snitch/snitch_cluster/snitch_cluster.py b/pulp/snitch/snitch_cluster/snitch_cluster.py
-index 6bd54f1..92f3983 100644
+index 6bd54f1..41fb555 100644
 --- a/pulp/snitch/snitch_cluster/snitch_cluster.py
 +++ b/pulp/snitch/snitch_cluster/snitch_cluster.py
 @@ -27,6 +27,7 @@ from pulp.idma.snitch_dma import SnitchDma
@@ -239,8 +239,12 @@ index 6bd54f1..92f3983 100644
  
  
  class SnitchClusterTcdm(gvsoc.systree.Component):
-@@ -75,7 +79,7 @@ class SnitchClusterTcdm(gvsoc.systree.Component):
-                 width_log2=int(math.log2(arch.bank_width))))
+@@ -72,10 +76,10 @@ class SnitchClusterTcdm(gvsoc.systree.Component):
+         nb_banks = arch.nb_superbanks * arch.nb_banks_per_superbank
+         for i in range(0, nb_banks):
+             banks.append(memory.Memory(self, f'bank_{i}', size=arch.bank_size, atomics=True,
+-                width_log2=int(math.log2(arch.bank_width))))
++                width_log2=0)) #int(math.log2(arch.bank_width))
  
          interleaver = L1_interleaver(self, 'interleaver', nb_slaves=nb_banks,
 -            nb_masters=arch.nb_masters, interleaving_bits=int(math.log2(arch.bank_width)))
