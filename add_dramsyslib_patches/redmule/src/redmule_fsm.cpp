@@ -166,7 +166,7 @@ int RedMule::fsm() {
 					next_state = FINISHED;
 				} else {
 					next_state = COMPUTING;
-					// this->trace.msg("To Compute \n");
+					this->trace.msg("Finish storing, Then to Compute \n");
 				}
 			}
 

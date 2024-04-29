@@ -227,7 +227,7 @@ bool RedMule::store_iter(int* latency) {
     *latency = 1;
     this->cycle_cnt++;
 
-    if (this->cycle_cnt == (ARRAY_WIDTH * ARRAY_HEIGHT * (PIPE_REGS + 1) * 4 / this->nb_tcdm_banks)) {
+    if (this->cycle_cnt == (ARRAY_WIDTH * ARRAY_HEIGHT * (PIPE_REGS + 1) * sizeof(dst_fmt_t) / (this->nb_tcdm_banks * 4))) {
         this->cycle_cnt = 0;
         this->hypercycle_cnt = 0;
         this->subcycle_cnt = 0;

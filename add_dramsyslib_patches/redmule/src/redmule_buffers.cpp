@@ -159,7 +159,7 @@ int RedMule_Buffers::x_row_offs(int k) {
 void RedMule_Buffers::compute_z() {
     for (int i = 0; i < ARRAY_WIDTH; i++) {
         for (int j = 0; j < (PIPE_REGS + 1) * ARRAY_HEIGHT; j++) {
-        #if DST_FMT!=FP8
+        #if DST_FMT==FP32
             float tmp_z;
 
             tmp_z = (float) this->y[i + this->y_offs][j];
@@ -169,6 +169,16 @@ void RedMule_Buffers::compute_z() {
             }
 
             this->z[i][j] = (dst_fmt_t) tmp_z;
+        #elif DST_FMT==FP8
+            uint8_t tmp_z;
+
+            tmp_z = (uint8_t) this->y[i + this->y_offs][j];
+
+            for (int k = 0; k < this->n; k++) {
+                tmp_z = fma((float) this->x[i][this->x_row_offs(k)], (float) this->w[k][j], (float)tmp_z);
+            }
+
+            this->z[i][j] = (uint8_t) tmp_z;
         #else
             uint16_t x_buf, w_buf, z_buf;
             float tmp_z, tmp_x, tmp_w;
