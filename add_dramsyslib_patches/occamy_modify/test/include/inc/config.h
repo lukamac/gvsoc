@@ -1,4 +1,4 @@
-#define ARRAY_HEIGHT 4
+#define ARRAY_HEIGHT 16
 #define PIPE_REGS    3
 #define ARRAY_WIDTH  (PIPE_REGS * ARRAY_HEIGHT)
 

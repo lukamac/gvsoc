@@ -3,12 +3,12 @@
 #define __TENSOR_DIM__
 
 #include "../archi_redmule.h"
-#define M_SIZE  48 
-#define N_SIZE  64 
-#define K_SIZE  48
-#define SRC_FMT FP32
-#define DST_FMT FP32
-#define FPFORMAT 32
+#define M_SIZE  192 
+#define N_SIZE  256 
+#define K_SIZE  192
+#define SRC_FMT FP8
+#define DST_FMT FP8
+#define FPFORMAT 8
 uint8_t gemm_ops = GEMM; 
 
 #endif
