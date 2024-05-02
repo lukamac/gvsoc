@@ -180,27 +180,17 @@ void RedMule_Buffers::compute_z() {
 
             this->z[i][j] = (uint8_t) tmp_z;
         #else
-            uint16_t x_buf, w_buf, z_buf;
-            float tmp_z, tmp_x, tmp_w;
-            _Float16 z16 = 0.0f;
 
-            z_buf = ((uint16_t) this->y[i + this->y_offs][j]) << 8;
-            tmp_z = (float) * (_Float16 *) &z_buf;
+            uint16_t tmp_z;
+
+            tmp_z = (uint16_t) this->y[i + this->y_offs][j];
 
             for (int k = 0; k < this->n; k++) {
-                x_buf = ((uint16_t) this->x[i][this->x_row_offs(k)]) << 8;
-                tmp_x = (float) * (_Float16 *) &x_buf;
-
-                w_buf = ((uint16_t) this->w[k][j]) << 8;
-                tmp_w = (float) * (_Float16 *) &w_buf;
-
-                tmp_z = fma(tmp_x, tmp_w, tmp_z);
+                tmp_z = fma((float) this->x[i][this->x_row_offs(k)], (float) this->w[k][j], (float)tmp_z);
             }
 
-            z16 = (_Float16) tmp_z;
-            z_buf = * (uint16_t *) &z16;
+            this->z[i][j] = (uint16_t) tmp_z;
 
-            this->z[i][j] = z_buf >> 8;
         #endif
         }
     }
