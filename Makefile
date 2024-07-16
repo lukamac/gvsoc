@@ -3,6 +3,8 @@ CMAKE ?= cmake
 
 TARGETS ?= rv32;rv64
 
+INSTALL_PREFIX ?= install
+
 export PATH:=$(CURDIR)/gapy/bin:$(PATH)
 
 all: checkout build
@@ -15,7 +17,7 @@ checkout:
 build:
 	# Change directory to curdir to avoid issue with symbolic links
 	cd $(CURDIR) && $(CMAKE) -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-		-DCMAKE_INSTALL_PREFIX=install \
+		-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
 		-DGVSOC_MODULES="$(CURDIR)/core/models;$(CURDIR)/pulp;$(MODULES)" \
 		-DGVSOC_TARGETS="${TARGETS}" \
 		-DCMAKE_SKIP_INSTALL_RPATH=false
@@ -25,7 +27,7 @@ build:
 
 
 clean:
-	rm -rf build install
+	rm -rf build ${INSTALL_PREFIX}
 
 
 
